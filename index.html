@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>3v3 Fixture Generator</title>
+<meta name="description" content="Create fair, organised and balanced small-sided games in seconds. Free, open-source fixture generator for 3v3 football." />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#0f3f2c" />
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("3v3-theme-pref");
+      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  })();
+</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%23117A4B%22/><circle cx=%2216%22 cy=%2216%22 r=%229%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%222.5%22/><path d=%22M16 9 L21 13 L19 19 L13 19 L11 13 Z%22 fill=%22%23fff%22/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+
+<!-- ==================== HOME ==================== -->
+<section class="screen" id="s-home" data-tab="home">
+  <div class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <div class="hero-title">
+        <div>
+          <h1>3v3</h1>
+          <p class="hero-sub-title">Fixture Generator</p>
+        </div>
+      </div>
+      <p class="hero-copy">Create fair, organised and balanced small-sided games in seconds.</p>
+      <button type="button" class="btn btn-primary btn-block" data-go="create">
+        <span data-icon="plus"></span> Create new session
+      </button>
+      <button type="button" class="btn btn-frost btn-block" data-go="saved">
+        <span data-icon="history"></span> View saved setups
+      </button>
+    </div>
+  </div>
+
+  <div class="screen-body">
+    <div class="quick-grid">
+      <button type="button" class="quick" data-go="how"><span class="quick-ico" data-icon="info"></span><span>How it works</span></button>
+      <button type="button" class="quick" data-go="fairness"><span class="quick-ico" data-icon="target"></span><span>Fairness</span></button>
+      <button type="button" class="quick" id="homeExportBtn"><span class="quick-ico" data-icon="export"></span><span>Export</span></button>
+      <button type="button" class="quick" data-go="settings"><span class="quick-ico" data-icon="cog"></span><span>Settings</span></button>
+    </div>
+    <div id="homeCurrent"></div>
+  </div>
+</section>
+
+<!-- ==================== STEP 1: SQUADS ==================== -->
+<section class="screen" id="s-create" data-tab="home" hidden>
+  <header class="bar">
+    <button type="button" class="bar-btn" data-back="home" aria-label="Back"><span data-icon="chevL"></span></button>
+    <h2>Create session</h2>
+  </header>
+  <div class="screen-body">
+    <p class="step-title">1. Squads &amp; players</p>
+    <div id="squadRows" class="stack"></div>
+    <button type="button" class="add-row" id="addSquadBtn"><span data-icon="plus"></span> Add squad</button>
+    <p class="hint" id="squadHint">You can add up to 4 squads.</p>
+    <div class="card">
+      <p class="card-title">Squad names &amp; players</p>
+      <p class="hint">Rename a squad and list player names. Leave names blank to auto-number them.</p>
+      <div id="squadNameEditors" class="stack" style="margin-top:12px"></div>
+    </div>
+  </div>
+  <div class="sticky-cta"><button type="button" class="btn btn-primary btn-block" data-go="session">Next</button></div>
+</section>
+
+<!-- ==================== STEP 2: SESSION SETTINGS ==================== -->
+<section class="screen" id="s-session" data-tab="home" hidden>
+  <header class="bar">
+    <button type="button" class="bar-btn" data-back="create" aria-label="Back"><span data-icon="chevL"></span></button>
+    <h2>Session settings</h2>
+  </header>
+  <div class="screen-body">
+    <div class="list-card">
+      <label class="list-row">
+        <span class="list-ico" data-icon="clock"></span>
+        <span class="list-text"><strong>Game duration</strong><small>How long each match lasts</small></span>
+        <span class="list-val"><input type="number" id="gameTime" min="1" max="60" value="8" inputmode="numeric" /> mins</span>
+      </label>
+      <label class="list-row">
+        <span class="list-ico" data-icon="pause"></span>
+        <span class="list-text"><strong>Rest time</strong><small>Recovery between matches</small></span>
+        <span class="list-val"><input type="number" id="restTime" min="0" max="30" value="2" inputmode="numeric" /> mins</span>
+      </label>
+      <label class="list-row">
+        <span class="list-ico" data-icon="walk"></span>
+        <span class="list-text"><strong>Pitch-change buffer</strong><small>Time to move between pitches</small></span>
+        <span class="list-val"><input type="number" id="bufferTime" min="0" max="15" value="0" inputmode="numeric" /> mins</span>
+      </label>
+      <label class="list-row">
+        <span class="list-ico" data-icon="timer"></span>
+        <span class="list-text"><strong>Total session</strong><small>How long the event lasts</small></span>
+        <span class="list-val"><input type="number" id="totalSession" min="1" max="600" value="90" inputmode="numeric" /> mins</span>
+      </label>
+      <label class="list-row">
+        <span class="list-ico" data-icon="play"></span>
+        <span class="list-text"><strong>Starting time</strong><small>When the session begins</small></span>
+        <span class="list-val"><input type="time" id="startTime" value="09:00" /></span>
+      </label>
+      <label class="list-row">
+        <span class="list-ico" data-icon="grid"></span>
+        <span class="list-text"><strong>Number of pitches</strong><small>How many pitches available</small></span>
+        <span class="list-val"><input type="number" id="numPitches" min="1" max="8" value="3" inputmode="numeric" /></span>
+      </label>
+    </div>
+
+    <p class="step-title">Match configuration</p>
+    <div class="list-card">
+      <div class="list-row static">
+        <span class="list-ico" data-icon="users"></span>
+        <span class="list-text"><strong>Team formation</strong><small>Players per team</small></span>
+        <span class="list-val plain" id="sumFormation">3v3</span>
+      </div>
+      <div class="list-row static">
+        <span class="list-ico" data-icon="shuffle"></span>
+        <span class="list-text"><strong>Match-up format</strong><small>Who plays who</small></span>
+        <span class="list-val plain" id="sumMatchup">Same squad</span>
+      </div>
+      <div class="list-row static">
+        <span class="list-ico" data-icon="grid"></span>
+        <span class="list-text"><strong>Pitch formats</strong><small>Team sizes per pitch</small></span>
+        <span class="list-val plain" id="sumPitchFormats">Automatic</span>
+      </div>
+    </div>
+    <p class="hint">Set these on the next screen.</p>
+  </div>
+  <div class="sticky-cta"><button type="button" class="btn btn-primary btn-block" data-go="options">Next</button></div>
+</section>
+
+<!-- ==================== STEP 3: OPTIONS ==================== -->
+<section class="screen" id="s-options" data-tab="home" hidden>
+  <header class="bar">
+    <button type="button" class="bar-btn" data-back="session" aria-label="Back"><span data-icon="chevL"></span></button>
+    <h2>Spare players &amp; options</h2>
+  </header>
+  <div class="screen-body">
+    <p class="step-title">How to handle spare players</p>
+    <div class="stack" id="spareOptions">
+      <button type="button" class="pick" data-spare="subs" aria-pressed="true">
+        <span class="pick-ico" data-icon="rotate"></span>
+        <span class="pick-text"><strong>Rotate as substitutes</strong><small>Spares rotate on for whoever has played least</small></span>
+        <span class="pick-check" data-icon="check"></span>
+      </button>
+      <button type="button" class="pick" data-spare="rest" aria-pressed="false">
+        <span class="pick-ico" data-icon="pause"></span>
+        <span class="pick-text"><strong>Rest between rounds</strong><small>Spares sit out while their squad plays</small></span>
+        <span class="pick-check" data-icon="check"></span>
+      </button>
+    </div>
+
+    <p class="step-title">Team formation</p>
+    <div class="seg" id="formationSeg">
+      <button type="button" class="seg-btn" data-size="3" aria-pressed="true">3v3</button>
+      <button type="button" class="seg-btn" data-size="4" aria-pressed="false">4v4</button>
+      <button type="button" class="seg-btn" data-size="5" aria-pressed="false">5v5</button>
+    </div>
+
+    <p class="step-title">Match-up format</p>
+    <div class="seg" id="matchupSeg">
+      <button type="button" class="seg-btn" data-matchup="separate" aria-pressed="false">Within squad</button>
+      <button type="button" class="seg-btn" data-matchup="same" aria-pressed="true">Same where possible</button>
+      <button type="button" class="seg-btn" data-matchup="mixed" aria-pressed="false">Mixed</button>
+    </div>
+    <p class="hint" id="matchupHint">Squads play themselves where numbers allow, and cross over only when they don't.</p>
+
+    <p class="step-title">Team-mates</p>
+    <div class="seg" id="formationTypeSeg">
+      <button type="button" class="seg-btn" data-formation="rotate" aria-pressed="true">Rotate each round</button>
+      <button type="button" class="seg-btn" data-formation="together" aria-pressed="false">Keep together</button>
+    </div>
+
+    <p class="step-title">Pitch formats</p>
+    <div class="seg" id="pitchModeSeg">
+      <button type="button" class="seg-btn" data-pmode="auto" aria-pressed="true">Automatic</button>
+      <button type="button" class="seg-btn" data-pmode="balanced" aria-pressed="false">Balance uneven</button>
+      <button type="button" class="seg-btn" data-pmode="manual" aria-pressed="false">Manual</button>
+    </div>
+    <p class="hint" id="pitchModeHint">Every pitch uses the team size above.</p>
+    <div id="manualFormats" class="field-grid" hidden></div>
+
+    <div class="toggle-card">
+      <span class="list-ico" data-icon="save"></span>
+      <span class="list-text"><strong>Save as template</strong><small>Reuse these settings next time</small></span>
+      <button type="button" class="switch" id="saveTemplateSwitch" role="switch" aria-checked="false"><span></span></button>
+    </div>
+    <input type="text" id="templateName" placeholder="Template name, e.g. Tuesday U9s" hidden />
+    <p id="optionsWarn" class="warn" role="alert" aria-live="polite"></p>
+  </div>
+  <div class="sticky-cta"><button type="button" class="btn btn-primary btn-block" id="generateBtn">Generate fixtures</button></div>
+</section>
+
+<!-- ==================== GENERATING ==================== -->
+<section class="screen gen-screen" id="s-generating" data-tab="home" hidden>
+  <div class="gen-wrap">
+    <div class="gen-ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="gen-track" cx="60" cy="60" r="52"></circle>
+        <circle class="gen-arc" cx="60" cy="60" r="52"></circle>
+      </svg>
+    </div>
+    <h2 class="gen-title">Generating your fixtures…</h2>
+    <p class="gen-sub">This will only take a few seconds.</p>
+    <ul class="gen-list" id="genList">
+      <li data-step="0"><span class="gen-check" data-icon="check"></span>Balancing teams</li>
+      <li data-step="1"><span class="gen-check" data-icon="check"></span>Checking fairness</li>
+      <li data-step="2"><span class="gen-check" data-icon="check"></span>Assigning pitches</li>
+      <li data-step="3"><span class="gen-check" data-icon="check"></span>Creating schedule</li>
+    </ul>
+  </div>
+  <div class="gen-hills" aria-hidden="true"></div>
+</section>
+
+<!-- ==================== COMPLETE ==================== -->
+<section class="screen" id="s-complete" data-tab="home" hidden>
+  <header class="bar">
+    <button type="button" class="bar-btn" data-back="home" aria-label="Back"><span data-icon="chevL"></span></button>
+    <h2>Session complete</h2>
+  </header>
+  <div class="screen-body center-body">
+    <span class="success-mark" data-icon="check"></span>
+    <h3 class="done-title">Your fixtures have been generated</h3>
+    <p class="hint" id="doneSummary"></p>
+    <div class="list-card" style="width:100%;margin-top:8px">
+      <button type="button" class="list-row nav" data-go="schedule"><span class="list-ico" data-icon="calendar"></span><span class="list-text"><strong>View full schedule</strong></span><span class="list-chev" data-icon="chevR"></span></button>
+      <button type="button" class="list-row nav" data-go="schedule" data-view="team"><span class="list-ico" data-icon="users"></span><span class="list-text"><strong>View by team</strong></span><span class="list-chev" data-icon="chevR"></span></button>
+      <button type="button" class="list-row nav" data-go="schedule" data-view="pitch"><span class="list-ico" data-icon="grid"></span><span class="list-text"><strong>View by pitch</strong></span><span class="list-chev" data-icon="chevR"></span></button>
+      <button type="button" class="list-row nav" id="completeExportBtn"><span class="list-ico" data-icon="export"></span><span class="list-text"><strong>Export as CSV</strong></span><span class="list-chev" data-icon="chevR"></span></button>
+    </div>
+    <button type="button" class="btn btn-primary btn-block" data-go="create">Create new session</button>
+    <button type="button" class="btn btn-soft btn-block" data-go="home">Back to home</button>
+  </div>
+</section>
+
+<!-- ==================== SCHEDULE ==================== -->
+<section class="screen" id="s-schedule" data-tab="fixtures" hidden>
+  <header class="bar">
+    <button type="button" class="bar-btn" data-back="home" aria-label="Back"><span data-icon="chevL"></span></button>
+    <div class="bar-stack">
+      <h2>Fixture schedule</h2>
+      <p class="bar-meta" id="scheduleMeta"></p>
+    </div>
+  </header>
+  <div class="screen-body">
+    <div class="tabs" id="scheduleTabs">
+      <button type="button" class="tabpill" data-view="full" aria-pressed="true">Full schedule</button>
+      <button type="button" class="tabpill" data-view="team" aria-pressed="false">By team</button>
+      <button type="button" class="tabpill" data-view="pitch" aria-pressed="false">By pitch</button>
+    </div>
+    <div id="scheduleFilters" class="chips"></div>
+    <div id="scheduleList" class="stack"></div>
+  </div>
+</section>
+
+<!-- ==================== MATCH DETAIL ==================== -->
+<section class="screen" id="s-match" data-tab="fixtures" hidden>
+  <header class="bar">
+    <button type="button" class="bar-btn" data-back="schedule" aria-label="Back"><span data-icon="chevL"></span></button>
+    <h2>Match detail</h2>
+  </header>
+  <div class="screen-body" id="matchBody"></div>
+</section>
+
+<!-- ==================== FAIRNESS ==================== -->
+<section class="screen" id="s-fairness" data-tab="fairness" hidden>
+  <header class="bar">
+    <button type="button" class="bar-btn" data-back="home" aria-label="Back"><span data-icon="chevL"></span></button>
+    <h2>Fairness</h2>
+  </header>
+  <div class="screen-body" id="fairnessBody"></div>
+</section>
+
+<!-- ==================== SAVED ==================== -->
+<section class="screen" id="s-saved" data-tab="settings" hidden>
+  <header class="bar">
+    <button type="button" class="bar-btn" data-back="home" aria-label="Back"><span data-icon="chevL"></span></button>
+    <h2>Saved setups</h2>
+  </header>
+  <div class="screen-body">
+    <div id="savedList" class="stack"></div>
+    <div class="card">
+      <p class="card-title">Move between devices</p>
+      <div class="btn-row">
+        <button type="button" class="btn btn-soft" id="exportSetupBtn">Export file</button>
+        <label class="btn btn-soft file-btn">Import file<input type="file" id="importSetupInput" accept="application/json" hidden /></label>
+      </div>
+    </div>
+    <p id="savedStatus" class="hint center" role="status" aria-live="polite"></p>
+  </div>
+</section>
+
+<!-- ==================== HOW IT WORKS ==================== -->
+<section class="screen" id="s-how" data-tab="settings" hidden>
+  <header class="bar">
+    <button type="button" class="bar-btn" data-back="home" aria-label="Back"><span data-icon="chevL"></span></button>
+    <h2>How it works</h2>
+  </header>
+  <div class="screen-body">
+    <div class="card"><p class="card-title">1. Add your squads</p><p class="hint">Set how many squads are training and how many players are in each. Rename them to your club or team names.</p></div>
+    <div class="card"><p class="card-title">2. Set the clock</p><p class="hint">Game length, rest time, an optional buffer for walking between pitches, and how long the whole session runs. The app works out how many rounds fit.</p></div>
+    <div class="card"><p class="card-title">3. Choose the rules</p><p class="hint">Team size, whether squads play themselves or mix, and whether team-mates rotate. Balance uneven numbers splits everyone across the pitches so nobody sits out when the count is odd.</p></div>
+    <div class="card"><p class="card-title">4. Run the session</p><p class="hint">Every player is tracked for games played and rest rounds, so you can see at a glance who is short on game time.</p></div>
+  </div>
+</section>
+
+<!-- ==================== SETTINGS ==================== -->
+<section class="screen" id="s-settings" data-tab="settings" hidden>
+  <header class="bar"><h2>Settings</h2></header>
+  <div class="screen-body">
+    <div class="list-card">
+      <button type="button" class="list-row nav" id="themeRow">
+        <span class="list-ico" data-icon="moon"></span>
+        <span class="list-text"><strong>Appearance</strong><small id="themeLabel">Light mode</small></span>
+        <span class="switch-static" id="themeSwitch" role="switch" aria-checked="false"><span></span></span>
+      </button>
+      <button type="button" class="list-row nav" data-go="saved"><span class="list-ico" data-icon="save"></span><span class="list-text"><strong>Saved setups</strong><small>Reuse squads and settings</small></span><span class="list-chev" data-icon="chevR"></span></button>
+      <button type="button" class="list-row nav" data-go="how"><span class="list-ico" data-icon="info"></span><span class="list-text"><strong>How it works</strong><small>A quick walkthrough</small></span><span class="list-chev" data-icon="chevR"></span></button>
+      <button type="button" class="list-row nav" id="settingsExportBtn"><span class="list-ico" data-icon="export"></span><span class="list-text"><strong>Export schedule</strong><small>Download fixtures as CSV</small></span><span class="list-chev" data-icon="chevR"></span></button>
+    </div>
+    <p class="hint center">Runs entirely in your browser. No accounts, no data leaves your device.</p>
+  </div>
+</section>
+
+<!-- ==================== TAB BAR ==================== -->
+<nav class="tabbar" id="tabbar" aria-label="Main">
+  <button type="button" class="tab" data-tab="home" aria-current="page"><span data-icon="home"></span><span class="tab-l">Home</span></button>
+  <button type="button" class="tab" data-tab="fixtures"><span data-icon="calendar"></span><span class="tab-l">Fixtures</span></button>
+  <button type="button" class="tab" data-tab="fairness"><span data-icon="target"></span><span class="tab-l">Fairness</span></button>
+  <button type="button" class="tab" data-tab="settings"><span data-icon="cog"></span><span class="tab-l">Settings</span></button>
+</nav>
+
+</div>
+<script src="js/engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
