@@ -1,0 +1,25 @@
+{
+  "name": "3v3 Fixture Generator",
+  "short_name": "3v3 Fixtures",
+  "description": "Create fair, organised and balanced small-sided games in seconds.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f3f2c",
+  "theme_color": "#0f3f2c",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
